@@ -92,7 +92,7 @@ jobs:
             -H "X-GitHub-Event: build_failure" \
             -H "X-Hub-Signature-256: $SIG" \
             -d "$PAYLOAD" \
-            "${{ secrets.WEBHOOK_URL }}" || true
+            "https://webhook.akinus21.com/webhook/noctalia-gtk-build" || true
 
       - name: Notify webhook on success
         if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
@@ -120,13 +120,14 @@ jobs:
             -H "X-GitHub-Event: build_success" \
             -H "X-Hub-Signature-256: $SIG" \
             -d "$PAYLOAD" \
-            "${{ secrets.WEBHOOK_URL }}" || true
+            "https://webhook.akinus21.com/webhook/noctalia-gtk-build" || true
 
       - name: Compute new tag
         if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         id: tag
         run: |
           PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Previous tag: $PREV_TAG"
           VERSION=$(echo "$PREV_TAG" | sed 's/^v//')
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
@@ -134,6 +135,7 @@ jobs:
           PATCH=$((10#$PATCH + 1))
           NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
           echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          echo "New tag will be: $NEW_TAG"
 
       - name: Tag and create GitHub release with binary
         if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
